@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AQA GCSE Biology: Infection & Response (Unit 4.3)</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    /* Splash Screen Styles */
+    #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        transition: opacity 0.8s ease-in-out, visibility 0.8s;
+        background: radial-gradient(circle at center, #064e3b 0%, #020617 100%);
+        color: white;
+    }
+    #splash-screen.hidden-splash { opacity: 0; visibility: hidden; }
+    .ambient-glow {
+        position: absolute;
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(0,0,0,0) 70%);
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 0; pointer-events: none;
+        animation: pulse-glow 5s infinite alternate ease-in-out;
+    }
+    @keyframes pulse-glow {
+        0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
+        100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    }
+    .fade-in-up { animation: fadeInUp 1s ease-out forwards; opacity: 0; transform: translateY(20px); }
+    .delay-1 { animation-delay: 0.3s; } .delay-2 { animation-delay: 0.6s; } .delay-3 { animation-delay: 0.9s; }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+    .neon-text { text-shadow: 0 0 10px rgba(16, 185, 129, 0.7), 0 0 20px rgba(16, 185, 129, 0.5), 0 0 30px rgba(52, 211, 153, 0.5); }
+    
+    .wbc-pulse { animation: wbcBeat 2.5s infinite alternate ease-in-out; transform-origin: center; }
+    @keyframes wbcBeat { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.05) translate(-2px, 2px); } }
+    
+    .virus-spin { animation: virusSpin 10s linear infinite; transform-origin: center; }
+    @keyframes virusSpin { 100% { transform: rotate(360deg); } }
+
+    /* Main App Styles */
+    .touch-draggable { touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+    .touch-draggable:active { cursor: grabbing; }
+    .dragging-card { opacity: 0.6; transform: scale(0.98); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); border-color: #10b981 !important; }
+    @media print {
+      body * { visibility: hidden; }
+      #score-modal-content, #score-modal-content * { visibility: visible; }
+      #score-modal-content { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen lg:h-screen lg:overflow-hidden flex flex-col selection:bg-emerald-500 selection:text-white relative">
+
+  <div id="splash-screen">
+      <div class="ambient-glow"></div>
+      <div class="z-10 relative flex flex-col items-center w-full max-w-5xl px-6 cursor-pointer">
+          <div class="text-center mb-6 fade-in-up">
+              <h1 class="text-5xl md:text-7xl font-black tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">
+                  INFECTION & RESPONSE
+              </h1>
+              <h2 class="text-xl md:text-2xl font-medium tracking-widest text-slate-300 uppercase">
+                  GCSE AQA Biology <span class="font-bold text-white">(8461) Unit 4.3</span>
+              </h2>
+          </div>
+
+          <div class="w-full max-w-3xl h-64 md:h-80 relative my-4 fade-in-up delay-1 flex justify-center items-center">
+              <svg viewBox="0 0 500 300" class="h-full drop-shadow-2xl">
+                  <!-- Petri Dish -->
+                  <circle cx="250" cy="150" r="120" fill="#f8fafc" stroke="#cbd5e1" stroke-width="8"/>
+                  <circle cx="250" cy="150" r="115" fill="#fef3c7" opacity="0.6"/>
+                  
+                  <!-- Bacterial colonies -->
+                  <circle cx="200" cy="100" r="15" fill="#facc15" class="wbc-pulse"/>
+                  <circle cx="300" cy="180" r="25" fill="#facc15" class="wbc-pulse" style="animation-delay: 0.5s"/>
+                  <circle cx="180" cy="200" r="10" fill="#facc15" class="wbc-pulse" style="animation-delay: 1s"/>
+                  
+                  <!-- Clear Zone (Zone of Inhibition) -->
+                  <circle cx="250" cy="150" r="45" fill="#fef3c7" opacity="0.9" stroke="#fbbf24" stroke-width="2"/>
+                  <!-- Antibiotic disc -->
+                  <circle cx="250" cy="150" r="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+                  
+                  <!-- Virus outside dish -->
+                  <g transform="translate(80, 230) scale(0.7)" class="virus-spin">
+                      <circle cx="0" cy="0" r="30" fill="#ef4444"/>
+                      <path d="M 0 -30 L 0 -45 M 0 30 L 0 45 M -30 0 L -45 0 M 30 0 L 45 0 M -21 -21 L -32 -32 M 21 21 L 32 32 M -21 21 L -32 32 M 21 -21 L 32 -32" stroke="#b91c1c" stroke-width="6" stroke-linecap="round"/>
+                  </g>
+
+                  <!-- White Blood Cell engulfing bacteria -->
+                  <g transform="translate(400, 80)" class="wbc-pulse">
+                      <path d="M 0 0 C 30 -20, 50 10, 40 40 C 30 70, -10 60, -30 30 C -50 0, -20 -20, 0 0 Z" fill="#93c5fd" opacity="0.9"/>
+                      <!-- Lobed Nucleus -->
+                      <path d="M -10 10 C 10 0, 20 20, 10 30 C 0 40, -20 20, -10 10 Z" fill="#1d4ed8"/>
+                      <!-- Bacteria being engulfed -->
+                      <rect x="-45" y="15" width="20" height="8" rx="4" fill="#16a34a" transform="rotate(45)"/>
+                  </g>
+              </svg>
+          </div>
+
+          <div class="mt-4 fade-in-up delay-2 text-center w-full">
+              <div class="inline-block relative">
+                  <div class="absolute -inset-1 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-400 rounded-lg blur opacity-30"></div>
+                  <div class="relative px-8 py-4 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl">
+                      <h3 class="text-2xl md:text-4xl font-black uppercase tracking-wide neon-text text-white">
+                          <span class="text-emerald-400">Lock in</span> with Mr Reeve's <br class="md:hidden"> Interactive Resources
+                      </h3>
+                  </div>
+              </div>
+          </div>
+          <div class="mt-10 fade-in-up delay-3">
+              <p class="text-slate-400 text-sm tracking-widest uppercase animate-pulse">Press any key or tap to begin</p>
+          </div>
+      </div>
+  </div>
+
+  <header class="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 text-white border-b border-emerald-800/60 sticky top-0 z-40 shadow-sm shrink-0">
+    <div class="max-w-[1550px] mx-auto px-2 sm:px-4 py-1">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-emerald-300 font-bold shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-xs sm:text-sm font-bold text-white tracking-tight leading-none">AQA GCSE Bio: Infection & Response</h1>
+              <span class="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-400/30">Unit 4.3</span>
+            </div>
+            <p class="text-[10px] text-emerald-300 font-semibold tracking-wide">Created by Mr Reeve</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div id="top-streak-display" class="hidden items-center gap-1.5 px-3 py-0.5 bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-xs sm:text-sm rounded-lg shadow-[0_0_10px_rgba(249,115,22,0.8)] border border-orange-300 transition-all duration-300 transform scale-95 opacity-0">
+            <span>🔥 Streak:</span><span id="streak-counter-val" class="text-base sm:text-lg drop-shadow-md">0</span>
+          </div>
+          <button onclick="promptAndOpenScorecard()" class="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-[11px] sm:text-xs rounded-lg shadow border border-amber-300 flex items-center gap-1.5 transition active:scale-95 cursor-pointer">
+            <span>📸</span><span class="whitespace-nowrap">Screenshot Score</span>
+          </button>
+        </div>
+      </div>
+
+      <nav class="flex items-center justify-between gap-1 mt-1 pt-0.5 border-t border-slate-800 text-[10px] sm:text-[11px] font-semibold text-slate-300 overflow-x-auto no-scrollbar">
+        <button onclick="switchTab('tab1')" id="btn-tab1" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-emerald-400 text-emerald-300 bg-slate-800/80 font-bold">1. Key Terms</button>
+        <button onclick="switchTab('tab2')" id="btn-tab2" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">2. Diseases</button>
+        <button onclick="switchTab('tab3')" id="btn-tab3" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">3. 40 MCQ Test</button>
+        <button onclick="switchTab('tab4')" id="btn-tab4" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">4. Vaccines</button>
+        <button onclick="switchTab('tab5')" id="btn-tab5" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent text-purple-300 hover:text-purple-100 relative">
+            5. Antibiotics
+            <span class="absolute -top-1 right-0 text-[8px] bg-purple-600 text-white px-1 rounded-sm border border-purple-400 font-bold shadow-xs">TRIPLE</span>
+        </button>
+        <button onclick="switchTab('tab6')" id="btn-tab6" class="tab-btn flex-1 min-w-[85px] py-1 px-1 text-center rounded-t-lg transition border-b-2 border-transparent hover:text-white">6. 6-Markers</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-[1550px] w-full mx-auto px-2 sm:px-3 py-1 flex flex-col justify-start lg:overflow-hidden lg:h-[calc(100vh-70px)]">
+
+    <!-- TAB 1: DISAPPEARING MATCH GAME -->
+    <section id="tab1" class="tab-pane block h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2 flex flex-col h-full justify-between overflow-hidden">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Match Game</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">Immunity & Drugs: Match Term to Definition</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-xs font-bold text-emerald-900">
+              Pairs: <span id="tab1-score" class="font-mono text-emerald-700">0</span> / 9
+            </div>
+            <button onclick="initTab1()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">Restart Game</button>
+          </div>
+        </div>
+        <div class="flex flex-col flex-grow overflow-hidden mt-1 gap-2">
+          <p class="text-[11px] text-slate-500 font-medium text-center shrink-0">Tap a key term, then tap its definition. Correct matches disappear!</p>
+          <div id="tab1-grid" class="flex-grow grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 overflow-y-auto content-start pb-2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: PATHOGEN MATCHER -->
+    <section id="tab2" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2 flex flex-col h-full justify-between overflow-hidden">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold text-rose-800 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">Activity 2</span>
+              <h2 class="text-xs sm:text-sm font-bold text-slate-900">Pathogens & Diseases: Match Disease to its Cause/Symptoms</h2>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-rose-50 border border-rose-200 px-2 py-0.5 rounded text-xs font-bold text-rose-900">Score: <span id="tab2-score" class="font-mono text-rose-700">0</span> / 6</div>
+            <button onclick="resetTab2()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">Reset</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 mt-1 flex-grow items-stretch overflow-hidden">
+          <div class="lg:col-span-4 bg-slate-50 p-2 rounded-xl border border-slate-200 flex flex-col justify-between overflow-hidden">
+            <div>
+              <div class="flex items-center justify-between pb-1 border-b border-slate-200 mb-1">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-700">Diseases:</span>
+              </div>
+              <div id="tab2-cells-bank" class="space-y-1 mt-2"></div>
+            </div>
+            <div id="tab2-selection-status" class="text-[10px] text-slate-500 font-medium bg-white p-1.5 rounded border border-slate-200 text-center leading-tight">
+              Tap a disease, then tap its correct description on the right.
+            </div>
+          </div>
+          <div class="lg:col-span-8 flex flex-col justify-between gap-1 overflow-hidden" id="tab2-targets-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: 40 MCQ TEST -->
+    <section id="tab3" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3 flex flex-col h-full justify-between overflow-hidden">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Exam Test</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">40 MCQ Quiz: Infection & Response Complete</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-slate-600 font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+              Q <span id="tab3-current-q-num" class="text-amber-700">1</span> / <span id="tab3-total-q-num">40</span>
+            </span>
+            <div class="bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-xs font-bold text-amber-900">Score: <span id="tab3-score" class="font-mono text-amber-700">0</span></div>
+            <button onclick="resetMCQ40()" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition cursor-pointer">Restart</button>
+          </div>
+        </div>
+        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden shrink-0 mt-1">
+          <div id="tab3-progress-bar" class="bg-amber-500 h-full w-[2.5%] transition-all duration-300"></div>
+        </div>
+        <div id="tab3-single-card" class="flex-grow flex flex-col justify-center max-w-3xl w-full mx-auto py-2"></div>
+        <div id="tab3-summary" class="hidden flex-grow flex flex-col items-center justify-center max-w-lg w-full mx-auto text-center p-4">
+          <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-2xl font-bold mb-2">🏆</div>
+          <h3 class="text-base sm:text-lg font-bold text-slate-900">Quiz Completed!</h3>
+          <p class="text-xs text-slate-600 mt-1">Your Final Score: <span id="tab3-final-score" class="font-bold text-amber-700 text-sm">0</span> / 40</p>
+          <div class="flex items-center gap-2 mt-4">
+            <button id="btn-retest-missed" onclick="retestMissedQuestions()" class="hidden px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold transition shadow-xs cursor-pointer">
+              🔄 Retest Missed (<span id="retest-count">0</span>)
+            </button>
+            <button onclick="resetMCQ40()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition shadow-xs cursor-pointer">Retake All 40 Questions</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: REORDER VACCINATION -->
+    <section id="tab4" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2.5 flex flex-col h-full justify-between overflow-hidden">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold text-sky-800 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">Reorder Task</span>
+              <h2 class="text-xs sm:text-sm font-bold text-slate-900">How Vaccines Work (Immunisation Sequence)</h2>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-sky-50 border border-sky-200 px-2 py-0.5 rounded text-xs font-bold text-sky-900">Score: <span id="tab4-score" class="font-mono text-sky-700">0</span> / 6</div>
+            <button onclick="checkVaccineSequence()" class="px-2.5 py-0.5 bg-sky-600 hover:bg-sky-700 text-white rounded text-xs font-bold transition cursor-pointer">✓ Check Order</button>
+            <button onclick="resetVaccineSequence()" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold border border-slate-300 transition cursor-pointer">Shuffle</button>
+          </div>
+        </div>
+        <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 shrink-0">Use the <strong>▲ Up</strong> and <strong>▼ Down</strong> buttons to sequence the steps of how a vaccine provides immunity:</p>
+        <div id="vaccine-sentences-list" class="flex flex-col justify-between gap-1.5 flex-grow overflow-hidden my-1 select-none"></div>
+        <div id="vaccine-feedback-banner" class="hidden p-1.5 rounded-lg text-xs font-bold border shrink-0"></div>
+      </div>
+    </section>
+
+    <!-- TAB 5: REQUIRED PRACTICALS (TRIPLE ONLY) -->
+    <section id="tab5" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2 flex flex-col h-full justify-between overflow-hidden relative border-t-4 border-t-purple-500">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-black text-white bg-purple-600 px-1.5 py-0.5 rounded shadow-sm">TRIPLE SCIENCE ONLY</span>
+              <h2 class="text-xs sm:text-sm font-bold text-slate-900">Required Practical: Culturing Microorganisms & Antibiotics</h2>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="bg-purple-50 border border-purple-200 px-2 py-0.5 rounded text-xs font-bold text-purple-900">Score: <span id="tab5-score" class="font-mono text-purple-700">0</span> / 20</div>
+            <button onclick="resetPracticals()" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold border border-slate-300 transition cursor-pointer">Restart Quiz</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col flex-grow overflow-hidden mt-1 gap-2">
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-2 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h3 class="text-xs font-bold text-purple-900">Free Science Lessons (YouTube):</h3>
+                    <p class="text-[10px] text-purple-700 mt-0.5">Watch this before attempting the methods, aseptic techniques, and $\pi r^2$ maths below!</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="https://www.youtube.com/watch?v=r7_nj3AZX6w" target="_blank" class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded flex items-center gap-1 shadow-sm"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg> Culturing Microorganisms</a>
+                </div>
+            </div>
+            <div id="tab5-practicals-container" class="flex-grow overflow-y-auto space-y-2 pr-1 pb-2"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: 6-MARKERS (DICTATION) -->
+    <section id="tab6" class="tab-pane hidden h-full flex flex-col">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-2.5 flex flex-col h-full justify-between overflow-hidden">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">Extended Writing</span>
+            <h2 class="text-xs sm:text-sm font-bold text-slate-900">6x AQA 6-Mark Questions (Complete All for 36 Marks)</h2>
+          </div>
+          <div class="flex items-center space-x-1 flex-wrap justify-end">
+            <button onclick="loadTab6Question(1)" id="tab6-qbtn-1" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white">Q1 <span id="tab6-badge-1" class="font-normal opacity-80">(0/6)</span></button>
+            <button onclick="loadTab6Question(2)" id="tab6-qbtn-2" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">Q2 <span id="tab6-badge-2" class="font-normal opacity-80">(0/6)</span></button>
+            <button onclick="loadTab6Question(3)" id="tab6-qbtn-3" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">Q3 <span id="tab6-badge-3" class="font-normal opacity-80">(0/6)</span></button>
+            <button onclick="loadTab6Question(4)" id="tab6-qbtn-4" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">Q4 <span id="tab6-badge-4" class="font-normal opacity-80">(0/6)</span></button>
+            <button onclick="loadTab6Question(5)" id="tab6-qbtn-5" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">Q5 <span id="tab6-badge-5" class="font-normal opacity-80">(0/6)</span></button>
+            <button onclick="loadTab6Question(6)" id="tab6-qbtn-6" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">Q6 <span id="tab6-badge-6" class="font-normal opacity-80">(0/6)</span></button>
+          </div>
+        </div>
+
+        <div class="mt-1 bg-indigo-50/70 border border-indigo-200 rounded-lg p-1.5 shrink-0">
+          <div class="flex items-center justify-between text-[10px] text-indigo-900 font-bold uppercase">
+            <span id="tab6-q-category">AQA 4.3</span>
+            <span class="bg-indigo-200 text-indigo-900 px-1.5 py-0.2 rounded font-mono">[MAX 6 MARKS]</span>
+          </div>
+          <p id="tab6-prompt-text" class="text-xs font-bold text-slate-900 mt-0.5 leading-snug"></p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 mt-1 flex-grow overflow-hidden items-stretch">
+          <div class="lg:col-span-6 flex flex-col justify-between overflow-hidden">
+            <div class="flex items-center justify-between text-[10px] text-slate-500 font-medium mb-0.5">
+              <span>Your Written Answer:</span>
+              <div class="flex items-center gap-1.5">
+                <span id="tab6-current-mark-display" class="font-mono bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.2 rounded font-bold">Mark: 0 / 6</span>
+                <span id="tab6-word-count" class="font-mono bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">0 words</span>
+              </div>
+            </div>
+            <textarea id="tab6-student-answer" oninput="analyzeTab6Text()" placeholder="Type your extended biology response here using precise AQA terminology, or use the Dictate button..." class="w-full flex-grow p-2 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-100 text-xs font-sans leading-relaxed outline-none transition bg-white resize-none"></textarea>
+            
+            <div class="flex items-center justify-between gap-1 mt-1 pt-1 border-t border-slate-100 shrink-0">
+              <div class="flex items-center space-x-1.5">
+                <button onclick="toggleDictation()" id="tab6-dictate-btn" class="px-2.5 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1">🎤 Dictate</button>
+                <button onclick="evaluateAndShowModels()" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold transition shadow-xs cursor-pointer">⚡ Grade Question</button>
+                <button id="tab6-honesty-btn" onclick="applyHonestyBonus()" class="hidden px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded text-xs font-bold transition shadow-xs cursor-pointer">🎁 +1</button>
+                <button onclick="clearTab6Answer()" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-xs font-medium transition cursor-pointer">Clear</button>
+              </div>
+              <span class="text-[11px] text-slate-500 font-mono hidden sm:inline">
+                Terms matched: <span id="tab6-matched-terms-count" class="font-bold text-indigo-600">0</span> / <span id="tab6-total-terms-count">8</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="lg:col-span-6 flex flex-col justify-between bg-slate-50 rounded-xl p-2 border border-slate-200 overflow-hidden">
+            <div class="shrink-0">
+              <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+                <span class="text-[10px] font-bold text-slate-800 uppercase tracking-wide">Key AQA Terminology Tracker</span>
+                <span id="tab6-predicted-level" class="text-[10px] font-bold text-slate-500">Predicted: Start typing</span>
+              </div>
+              <div id="tab6-keywords-chips" class="flex flex-wrap gap-1 mt-1"></div>
+            </div>
+
+            <div id="tab6-models-section" class="flex-grow mt-1.5 pt-1 border-t border-slate-200 hidden flex flex-col justify-between overflow-y-auto pr-1 space-y-1">
+              <div class="rounded-lg border border-emerald-300 bg-emerald-50/70 p-1.5 text-[11px]">
+                <div class="flex items-center justify-between font-bold text-emerald-900">
+                  <span>High-Level Model Answer (5–6 Marks)</span>
+                  <span class="bg-emerald-600 text-white px-1 py-0.2 rounded text-[9px]">6/6</span>
+                </div>
+                <p id="model-high-text" class="text-slate-800 mt-0.5 leading-snug text-[10px]"></p>
+                <p class="text-[9px] text-emerald-950 font-semibold mt-0.5"><strong>Commentary:</strong> <span id="model-high-commentary"></span></p>
+              </div>
+              <div class="rounded-lg border border-sky-300 bg-sky-50/70 p-1.5 text-[11px]">
+                <div class="flex items-center justify-between font-bold text-sky-900">
+                  <span>Medium-Level Model Answer (3–4 Marks)</span>
+                  <span class="bg-sky-600 text-white px-1 py-0.2 rounded text-[9px]">4/6</span>
+                </div>
+                <p id="model-med-text" class="text-slate-800 mt-0.5 leading-snug text-[10px]"></p>
+              </div>
+            </div>
+            <div id="tab6-models-placeholder" class="flex-grow flex items-center justify-center text-center p-3 text-slate-400 text-xs">
+              Type your response (or dictate) and click "Grade" to see authentic AQA examiner model answers.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SCORECARD MODAL -->
+  <div id="scorecard-modal" class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-3 hidden">
+    <div id="score-modal-content" class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-2xl border border-slate-200 text-slate-800 space-y-3">
+      <div class="flex items-center justify-between border-b pb-2 border-slate-200">
+        <div class="flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-600 font-bold flex items-center justify-center text-sm border border-emerald-500/30">📊</div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900">Official Biology Scorecard</h3>
+            <p class="text-[11px] text-emerald-700 font-semibold">AQA GCSE Biology (4.3) • Infection & Response</p>
+          </div>
+        </div>
+        <button onclick="closeScorecardModal()" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-2 py-0.5 rounded cursor-pointer">✕</button>
+      </div>
+
+      <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 font-medium">Candidate Name:</span>
+          <span id="scorecard-display-name" class="font-bold text-slate-900 text-sm bg-white px-2 py-0.5 rounded border border-slate-300">Candidate</span>
+        </div>
+        <div class="flex items-center justify-between text-[11px]">
+          <span class="text-slate-500 font-medium">Date & Timestamp:</span>
+          <span id="scorecard-timestamp" class="font-mono font-semibold text-slate-800"></span>
+        </div>
+      </div>
+
+      <div class="border rounded-xl overflow-hidden text-xs">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 font-bold border-b text-[11px]">
+              <th class="p-2">Revision Activity</th>
+              <th class="p-2 text-center">Marks</th>
+              <th class="p-2 text-right">Max</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-[11px]" id="scorecard-table-body"></tbody>
+          <tfoot>
+            <tr class="bg-emerald-50 text-emerald-950 font-bold border-t border-emerald-200 text-xs">
+              <td class="p-2">Cumulative Total</td>
+              <td class="p-2 text-center font-mono font-bold text-emerald-800" id="scorecard-total-marks">0</td>
+              <td class="p-2 text-right font-mono" id="scorecard-max-marks">117</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="p-2 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-between text-xs">
+        <div>
+          <span class="text-orange-900 font-bold block text-[11px]">Overall Mastery Score:</span>
+          <span id="scorecard-grade-descriptor" class="text-orange-700 text-[10px]">Great effort</span>
+        </div>
+        <span id="scorecard-percentage" class="text-base font-black text-orange-700 font-mono">0%</span>
+      </div>
+
+      <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+        <button onclick="promptEditName()" class="text-sky-600 hover:text-sky-800 font-semibold text-[11px] cursor-pointer">✏️ Change Name</button>
+        <div class="flex items-center gap-1.5">
+          <button onclick="window.print()" class="px-3 py-1 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition flex items-center gap-1 text-xs cursor-pointer">🖨 Print / PDF</button>
+          <button onclick="closeScorecardModal()" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition text-xs cursor-pointer">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const splash = document.getElementById('splash-screen');
+    let hasStarted = false;
+    
+    function handleStartApp() {
+        if (hasStarted) return;
+        hasStarted = true;
+        splash.classList.add('hidden-splash');
+        setTimeout(() => { splash.style.display = 'none'; }, 800);
+    }
+    splash.addEventListener('click', handleStartApp);
+    window.addEventListener('keydown', (e) => { if (!splash.classList.contains('hidden-splash')) handleStartApp(); });
+
+    let currentTabId = 'tab1';
+    let studentCandidateName = "";
+    let currentStreak = 0;
+
+    function updateStreakDisplay() {
+      const streakEl = document.getElementById('top-streak-display');
+      const valEl = document.getElementById('streak-counter-val');
+      if (!streakEl || !valEl) return;
+      if (currentStreak >= 2) {
+        streakEl.classList.remove('hidden');
+        setTimeout(() => { streakEl.classList.remove('scale-95', 'opacity-0'); streakEl.classList.add('scale-100', 'opacity-100'); }, 10);
+        valEl.textContent = currentStreak;
+        streakEl.classList.remove('animate-pulse'); void streakEl.offsetWidth; streakEl.classList.add('animate-pulse');
+      } else {
+        streakEl.classList.remove('scale-100', 'opacity-100', 'animate-pulse'); streakEl.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => { if (currentStreak < 2) streakEl.classList.add('hidden'); }, 300);
+      }
+    }
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      if (type === 'correct') {
+        osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+      } else if (type === 'complete') {
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(440, audioCtx.currentTime); osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2); osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.6);
+        if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: ['#10b981', '#34d399', '#facc15'] });
+      }
+    }
+
+    function switchTab(tabId) {
+      currentTabId = tabId;
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-400', 'text-emerald-300', 'bg-slate-800/80', 'font-bold');
+        btn.classList.add('border-transparent');
+      });
+      const pane = document.getElementById(tabId);
+      if (pane) pane.classList.remove('hidden');
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) {
+        if(tabId !== 'tab5') {
+            btn.classList.add('border-emerald-400', 'text-emerald-300', 'bg-slate-800/80', 'font-bold');
+            btn.classList.remove('border-transparent');
+        } else {
+            btn.classList.add('border-purple-400', 'bg-slate-800/80', 'font-bold');
+        }
+      }
+    }
+
+    function showToast(msg, bg = 'bg-emerald-600') {
+      const prev = document.getElementById('app-floating-toast'); if (prev) prev.remove();
+      const toast = document.createElement('div'); toast.id = 'app-floating-toast';
+      toast.className = `fixed bottom-3 right-3 z-50 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg transition-all duration-300 ${bg}`;
+      toast.textContent = msg; document.body.appendChild(toast);
+      setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 250); }, 2000);
+    }
+
+    function promptAndOpenScorecard() {
+      const entered = window.prompt("Enter candidate name for scorecard:", studentCandidateName || "");
+      if (entered !== null) { studentCandidateName = entered.trim().length > 0 ? entered.trim() : "Biology Student"; openScorecardModal(); }
+    }
+    function promptEditName() {
+      const entered = window.prompt("Update candidate name:", studentCandidateName);
+      if (entered && entered.trim().length > 0) { studentCandidateName = entered.trim(); document.getElementById('scorecard-display-name').textContent = studentCandidateName; }
+    }
+    function openScorecardModal() {
+      document.getElementById('scorecard-display-name').textContent = studentCandidateName || "Biology Student";
+      const now = new Date(); document.getElementById('scorecard-timestamp').textContent = now.toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) + ', ' + now.toLocaleTimeString('en-GB');
+
+      const s1 = typeof tab1Score !== 'undefined' ? tab1Score : 0;
+      const s2 = tab2Matches.filter(m => m.matchedId === m.id).length;
+      let s3 = 0; Object.keys(userMCQAnswers).forEach(idx => { if (userMCQAnswers[idx] === mcq40Data[idx].ans) s3++; });
+      const s4 = tab4Score;
+      let s5 = 0; Object.keys(tab5Answers).forEach(idx => { if(tab5Answers[idx] === tab5Data[idx].ans) s5++; });
+      const s6 = (tab6Scores[1] || 0) + (tab6Scores[2] || 0) + (tab6Scores[3] || 0) + (tab6Scores[4] || 0) + (tab6Scores[5] || 0) + (tab6Scores[6] || 0);
+
+      const total = s1 + s2 + s3 + s4 + s5 + s6; const maxTotal = 9 + 6 + 40 + 6 + 20 + 36; // 117 marks
+
+      const rows = [
+        { name: "Tab 1: Infection Match Game", score: s1, max: 9 },
+        { name: "Tab 2: Pathogens & Diseases", score: s2, max: 6 },
+        { name: "Tab 3: 40 MCQ Quiz", score: s3, max: 40 },
+        { name: "Tab 4: Vaccine Order", score: s4, max: 6 },
+        { name: "Tab 5: Practicals (TRIPLE)", score: s5, max: 20 },
+        { name: "Tab 6: 6x AQA 6-Markers", score: s6, max: 36 }
+      ];
+
+      const tbody = document.getElementById('scorecard-table-body'); tbody.innerHTML = '';
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="p-1.5 text-slate-800">${r.name}</td><td class="p-1.5 text-center font-mono font-bold text-emerald-700">${r.score}</td><td class="p-1.5 text-right font-mono text-slate-500">${r.max}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('scorecard-total-marks').textContent = total;
+      document.getElementById('scorecard-max-marks').textContent = maxTotal;
+      const pct = Math.round((total / maxTotal) * 100); document.getElementById('scorecard-percentage').textContent = `${pct}%`;
+
+      const desc = document.getElementById('scorecard-grade-descriptor');
+      if (pct >= 80) desc.textContent = "🌟 Grade 8/9 Standard - Outstanding biology knowledge!";
+      else if (pct >= 60) desc.textContent = "👍 Grade 6/7 Standard - Strong conceptual recall.";
+      else if (pct >= 40) desc.textContent = "⚖️ Grade 4/5 Standard - Solid baseline, keep revising.";
+      else desc.textContent = "⚠️ Review Needed - Revisit the core concepts!";
+
+      document.getElementById('scorecard-modal').classList.remove('hidden');
+    }
+    function closeScorecardModal() { document.getElementById('scorecard-modal').classList.add('hidden'); }
+
+    // TAB 1: DISAPPEARING MATCH GAME
+    const tab1Pairs = [
+      { id: '1', q: "Pathogen", a: "A microorganism that causes disease" },
+      { id: '2', q: "Antigen", a: "A unique protein on the surface of a pathogen" },
+      { id: '3', q: "Antibody", a: "Protein produced by white blood cells that binds to specific antigens" },
+      { id: '4', q: "Phagocytosis", a: "Process where a white blood cell engulfs and digests a pathogen" },
+      { id: '5', q: "Antitoxin", a: "Chemical produced by WBCs to neutralise bacterial toxins" },
+      { id: '6', q: "Vaccination", a: "Injecting dead or inactive pathogens to stimulate immunity" },
+      { id: '7', q: "Antibiotic", a: "Drug that kills bacteria but not viruses" },
+      { id: '8', q: "Placebo", a: "A fake drug used in clinical trials (e.g. a sugar pill)" },
+      { id: '9', q: "Double-blind trial", a: "Neither the doctor nor the patient knows who gets the real drug" }
+    ];
+
+    let tab1Cards = []; let tab1Score = 0; let flippedCards = [];
+
+    function initTab1() {
+        tab1Cards = [];
+        tab1Pairs.forEach(pair => {
+            tab1Cards.push({ id: pair.id, type: 'q', text: pair.q, matched: false });
+            tab1Cards.push({ id: pair.id, type: 'a', text: pair.a, matched: false });
+        });
+        tab1Cards.sort(() => Math.random() - 0.5); tab1Score = 0; flippedCards = [];
+        document.getElementById('tab1-score').textContent = tab1Score; renderTab1();
+    }
+
+    function renderTab1() {
+        const grid = document.getElementById('tab1-grid'); if (!grid) return; grid.innerHTML = '';
+        tab1Cards.forEach((card, idx) => {
+            const btn = document.createElement('div'); const isFlipped = flippedCards.includes(idx);
+            if (card.matched) {
+                btn.className = "p-3 rounded-xl border border-transparent opacity-0 pointer-events-none transition-all duration-500 min-h-[90px]";
+            } else {
+                let style = "bg-white border-slate-200 text-slate-800 hover:border-emerald-400 hover:shadow-md";
+                if (isFlipped) style = "bg-emerald-100 border-emerald-500 text-emerald-900 ring-2 ring-emerald-300 font-bold scale-105 shadow-lg z-10";
+                const textSize = card.type === 'q' ? 'text-sm font-bold' : 'text-xs font-medium';
+                btn.className = `p-3 rounded-xl border transition-all duration-300 flex items-center justify-center text-center cursor-pointer min-h-[90px] select-none ${style}`;
+                btn.innerHTML = `<span class="${textSize} leading-snug">${card.text}</span>`;
+                btn.onclick = () => handleCardClick(idx);
+            }
+            grid.appendChild(btn);
+        });
+    }
+
+    function handleCardClick(index) {
+        if (flippedCards.length >= 2 || tab1Cards[index].matched || flippedCards.includes(index)) return;
+        flippedCards.push(index); renderTab1();
+        if (flippedCards.length === 2) {
+            const card1 = tab1Cards[flippedCards[0]]; const card2 = tab1Cards[flippedCards[1]];
+            if (card1.id === card2.id && card1.type !== card2.type) {
+                setTimeout(() => {
+                    card1.matched = true; card2.matched = true; tab1Score++; document.getElementById('tab1-score').textContent = tab1Score;
+                    playSound('correct'); currentStreak++; updateStreakDisplay(); flippedCards = []; renderTab1();
+                    if(tab1Score === 9) { playSound('complete'); showToast("All matched! Brilliant!", "bg-emerald-500 text-white"); }
+                }, 400);
+            } else {
+                setTimeout(() => { currentStreak = 0; updateStreakDisplay(); playSound('wrong'); flippedCards = []; renderTab1(); }, 800);
+            }
+        }
+    }
+
+    // TAB 2: PATHOGEN MATCHER
+    const tab2Diseases = [
+      { id: 'measles', name: 'Measles' },
+      { id: 'hiv', name: 'HIV' },
+      { id: 'salmonella', name: 'Salmonella' },
+      { id: 'malaria', name: 'Malaria' },
+      { id: 'rose', name: 'Rose Black Spot' },
+      { id: 'tmv', name: 'Tobacco Mosaic Virus (TMV)' }
+    ];
+    let tab2Matches = [
+      { id: 'measles', desc: "Viral disease spread by droplet infection causing a fever and red rash.", matchedId: null },
+      { id: 'hiv', desc: "Viral infection spread by sexual contact/blood, attacking the immune system.", matchedId: null },
+      { id: 'salmonella', desc: "Bacterial disease spread by unhygienic food prep, causing vomiting & diarrhoea.", matchedId: null },
+      { id: 'malaria', desc: "Protist disease spread by mosquito vector, causing recurrent fever.", matchedId: null },
+      { id: 'rose', desc: "Fungal plant disease causing purple/black spots on leaves & early leaf drop.", matchedId: null },
+      { id: 'tmv', desc: "Viral plant disease causing a mosaic pattern on leaves and reduced photosynthesis.", matchedId: null }
+    ];
+    let selectedTab2Id = null;
+
+    function renderTab2() {
+      const bank = document.getElementById('tab2-cells-bank'); const targetsContainer = document.getElementById('tab2-targets-container');
+      if (!bank || !targetsContainer) return; bank.innerHTML = '';
+      tab2Diseases.forEach(cell => {
+        const isMatched = tab2Matches.some(m => m.matchedId === cell.id && m.id === cell.id);
+        const isSelected = selectedTab2Id === cell.id;
+        const btn = document.createElement('button');
+        btn.onclick = () => { if(!isMatched) { selectedTab2Id = (selectedTab2Id === cell.id) ? null : cell.id; renderTab2(); } };
+        let style = "bg-white hover:border-rose-400";
+        if (isMatched) style = "bg-emerald-50 border-emerald-300 opacity-60";
+        else if (isSelected) style = "bg-rose-100 border-rose-500 ring-2 ring-rose-300";
+        btn.className = `w-full text-left p-3 rounded-xl border text-sm transition flex items-center justify-between ${style}`;
+        btn.innerHTML = `<span class="font-semibold">${cell.name}</span><span class="text-[10px] px-2 py-1 rounded bg-slate-100">${isMatched ? '✓' : 'Select'}</span>`;
+        bank.appendChild(btn);
+      });
+
+      targetsContainer.innerHTML = '';
+      tab2Matches.forEach(tgt => {
+        const matchedCell = tgt.matchedId ? tab2Diseases.find(m => m.id === tgt.matchedId) : null;
+        const card = document.createElement('div');
+        card.onclick = () => {
+          if(!selectedTab2Id) return showToast("Select a disease first!");
+          tgt.matchedId = selectedTab2Id;
+          if(tgt.matchedId === tgt.id) { currentStreak++; playSound('correct'); } else { currentStreak=0; playSound('wrong'); }
+          updateStreakDisplay(); selectedTab2Id = null; renderTab2();
+        };
+        let border = "border-slate-200 bg-white"; let badge = `<span class="text-[10px] px-2 py-1 bg-slate-100 rounded">Empty</span>`;
+        if (matchedCell) {
+          if (tgt.matchedId === tgt.id) { border = "border-emerald-300 bg-emerald-50"; badge = `<span class="text-xs bg-emerald-600 text-white px-2 rounded">✓ ${matchedCell.name}</span>`; }
+          else { border = "border-rose-300 bg-rose-50"; badge = `<span class="text-xs bg-rose-600 text-white px-2 rounded">✗ ${matchedCell.name}</span>`; }
+        }
+        card.className = `p-3 rounded-xl border text-sm transition cursor-pointer flex justify-between gap-3 ${border}`;
+        card.innerHTML = `<p class="flex-grow">${tgt.desc}</p><div class="shrink-0 flex items-center">${badge}</div>`;
+        targetsContainer.appendChild(card);
+      });
+      document.getElementById('tab2-score').textContent = tab2Matches.filter(m => m.matchedId === m.id).length;
+    }
+    function resetTab2() { tab2Matches.forEach(m => m.matchedId = null); tab2Diseases.sort(()=>Math.random()-0.5); tab2Matches.sort(()=>Math.random()-0.5); renderTab2(); }
+
+    // TAB 3: 40 MCQ
+    const mcq40Data = [
+      { q: "What is a pathogen?", options: ["A white blood cell", "A microorganism that causes disease", "A harmless bacterium", "A type of medicine"], ans: 1, rationale: "Pathogens are infectious microorganisms such as viruses, bacteria, protists, or fungi." },
+      { q: "Which of the following is NOT a type of pathogen?", options: ["Bacteria", "Virus", "Toxin", "Fungi"], ans: 2, rationale: "Toxins are poisons produced by bacteria, not the living pathogen itself." },
+      { q: "How do bacteria make you feel ill?", options: ["They burst your cells open", "They produce toxins that damage tissues", "They absorb your blood", "They cause genetic mutations"], ans: 1, rationale: "Bacteria reproduce rapidly and release toxins that damage tissues and make you feel ill." },
+      { q: "How do viruses make you feel ill?", options: ["They produce toxins", "They live and reproduce inside cells, causing cell damage", "They eat white blood cells", "They block your arteries"], ans: 1, rationale: "Viruses replicate inside host cells, eventually causing the cell to burst and die." },
+      { q: "Which of these diseases is caused by a virus?", options: ["Measles", "Gonorrhoea", "Salmonella", "Malaria"], ans: 0, rationale: "Measles is a viral disease spread by inhalation of droplets from sneezes and coughs." },
+      { q: "What is a main symptom of measles?", options: ["Vomiting and diarrhoea", "A red skin rash and fever", "Pain when urinating", "Recurrent episodes of fever"], ans: 1, rationale: "Measles causes a fever and a red skin rash." },
+      { q: "How is HIV spread?", options: ["Airborne droplets", "Mosquito bites", "Sexual contact or exchange of body fluids (e.g., blood)", "Eating undercooked food"], ans: 2, rationale: "HIV is transmitted through sexual contact or shared needles/blood." },
+      { q: "What cells does HIV attack?", options: ["Red blood cells", "Muscle cells", "The body's immune cells", "Nerve cells"], ans: 2, rationale: "HIV attacks immune cells, eventually leading to AIDS where the immune system cannot fight other infections." },
+      { q: "What plant disease does TMV (Tobacco Mosaic Virus) cause?", options: ["Rose black spot", "A mosaic pattern of discolouration on leaves", "Crown galls", "Root rot"], ans: 1, rationale: "TMV causes a distinctive 'mosaic' pattern which destroys chloroplasts." },
+      { q: "Why does TMV stunt plant growth?", options: ["It stops the roots absorbing water", "The discolouration reduces the rate of photosynthesis", "It eats the plant leaves", "It stops respiration"], ans: 1, rationale: "Less chlorophyll means less photosynthesis, resulting in less glucose for growth." },
+      { q: "What type of pathogen causes Salmonella?", options: ["Virus", "Bacteria", "Protist", "Fungi"], ans: 1, rationale: "Salmonella is a type of bacteria that causes food poisoning." },
+      { q: "How is Salmonella spread?", options: ["Sneezing", "Unprotected sex", "Bacteria ingested in food, or food prepared in unhygienic conditions", "Mosquitoes"], ans: 2, rationale: "It is spread by eating contaminated food, especially poultry." },
+      { q: "How is Gonorrhoea spread?", options: ["Through the air", "By sexual contact", "By drinking dirty water", "By touching infected plants"], ans: 1, rationale: "Gonorrhoea is a sexually transmitted disease (STD)." },
+      { q: "What are the symptoms of Gonorrhoea?", options: ["A rash and fever", "Thick yellow/green discharge from the vagina/penis and pain urinating", "Vomiting and diarrhoea", "Black spots on the skin"], ans: 1, rationale: "It causes discharge and pain on urination." },
+      { q: "How can the spread of Gonorrhoea be controlled?", options: ["Vaccination", "Antibiotics and the use of a barrier method of contraception (e.g. condom)", "Washing hands", "Killing mosquitoes"], ans: 1, rationale: "Antibiotics treat the bacterial infection, and condoms prevent transmission." },
+      { q: "What type of pathogen causes Rose Black Spot?", options: ["Fungi", "Virus", "Bacteria", "Protist"], ans: 0, rationale: "Rose black spot is a fungal disease affecting plant leaves." },
+      { q: "How is Rose Black Spot spread in the environment?", options: ["By aphids", "By water or wind", "By direct contact between plants", "By the soil"], ans: 1, rationale: "The fungal spores are carried by wind or splashed by water droplets." },
+      { q: "How can Rose Black Spot be treated?", options: ["Antibiotics", "Using fungicides and/or removing and destroying affected leaves", "Vaccines", "Painkillers"], ans: 1, rationale: "Fungicides kill the fungus, and destroying leaves prevents further spread." },
+      { q: "What type of pathogen causes Malaria?", options: ["Bacteria", "Protist", "Virus", "Fungi"], ans: 1, rationale: "Malaria is caused by a protist parasite." },
+      { q: "What acts as the 'vector' for Malaria?", options: ["House flies", "Ticks", "Mosquitoes", "Fleas"], ans: 2, rationale: "Female Anopheles mosquitoes carry the protist and pass it to humans when they bite." },
+      { q: "How does the skin act as a non-specific defence system?", options: ["It produces antibodies", "It acts as a physical barrier and produces antimicrobial secretions", "It traps pathogens in mucus", "It produces acid to kill bacteria"], ans: 1, rationale: "The skin physically blocks pathogens and secretes antimicrobial oils/sweat." },
+      { q: "What is the function of the cilia in the trachea?", options: ["To kill bacteria", "To waft mucus containing trapped pathogens to the back of the throat to be swallowed", "To absorb oxygen", "To produce antibodies"], ans: 1, rationale: "Ciliated cells move the pathogen-trapping mucus away from the lungs." },
+      { q: "How does the stomach defend against infection?", options: ["It produces alkaline bile", "It produces antibodies", "It produces hydrochloric acid which kills most pathogens in food", "It digests them with amylase"], ans: 2, rationale: "Stomach acid (pH 2) destroys the majority of ingested pathogens." },
+      { q: "What is phagocytosis?", options: ["White blood cells producing antibodies", "White blood cells producing antitoxins", "White blood cells engulfing and digesting pathogens", "Red blood cells absorbing oxygen"], ans: 2, rationale: "Phagocytes surround, engulf, and break down pathogens with enzymes." },
+      { q: "What is an antigen?", options: ["A white blood cell", "A unique protein on the surface of a cell or pathogen", "A poison made by bacteria", "A medicine"], ans: 1, rationale: "Antigens are chemical markers that the immune system uses to identify foreign cells." },
+      { q: "What do antibodies do?", options: ["They engulf pathogens", "They neutralise toxins", "They lock onto specific antigens on pathogens to destroy them", "They act as a physical barrier"], ans: 2, rationale: "Antibodies are highly specific proteins that bind to matching antigens." },
+      { q: "What is a vaccine?", options: ["A large dose of antibiotics", "A small quantity of dead or inactive forms of a pathogen", "A dose of white blood cells", "A painkiller"], ans: 1, rationale: "Vaccines stimulate the immune system without causing the actual disease." },
+      { q: "What is 'herd immunity'?", options: ["When animals cannot catch human diseases", "When a large proportion of the population is immune to a disease, reducing its spread", "When you get sick from being in a crowd", "When a pathogen mutates"], ans: 1, rationale: "If most people are vaccinated, the disease cannot spread easily, protecting the unvaccinated." },
+      { q: "What do antibiotics (e.g. penicillin) do?", options: ["Kill viruses", "Relieve pain", "Kill infective bacteria inside the body", "Kill fungi only"], ans: 2, rationale: "Antibiotics specifically target bacterial structures (like cell walls) to kill them." },
+      { q: "Why can't antibiotics kill viruses?", options: ["Viruses are too small", "Viruses reproduce inside the host's cells, so drugs would damage the body's own tissues", "Viruses have a thick cell wall", "Viruses mutate too fast"], ans: 1, rationale: "It is difficult to develop drugs that kill viruses without damaging the host cell they live in." },
+      { q: "What is a painkiller?", options: ["A drug that cures disease", "A drug that kills bacteria", "A drug used to treat the symptoms of disease but does not kill pathogens", "A vaccine"], ans: 2, rationale: "Painkillers (like aspirin or paracetamol) relieve symptoms but don't fight the infection." },
+      { q: "Why is it difficult to develop drugs for viral infections?", options: ["They don't have antigens", "Because viruses live inside cells, it's hard to kill them without damaging body tissues", "They are too contagious", "They are not living"], ans: 1, rationale: "Antiviral drugs must attack the virus without destroying the human cell it hides in." },
+      { q: "Where was the heart drug digitalis originally extracted from?", options: ["Willow bark", "Penicillium mould", "Foxgloves", "Rose plants"], ans: 2, rationale: "Digitalis is a chemical found in foxglove plants used for heart conditions." },
+      { q: "Where does aspirin originate from?", options: ["Foxgloves", "Willow bark", "Mould", "Seaweed"], ans: 1, rationale: "Aspirin is a painkiller originally derived from the bark of willow trees." },
+      { q: "Who discovered penicillin?", options: ["Louis Pasteur", "Alexander Fleming", "Edward Jenner", "Gregor Mendel"], ans: 1, rationale: "Fleming noticed a Penicillium mould killing bacteria on an agar plate." },
+      { q: "In drug testing, what is 'toxicity' testing for?", options: ["To see if the drug is safe and not poisonous", "To see if the drug actually works", "To find the best dose", "To see how much it costs"], ans: 0, rationale: "Toxicity checks for harmful side effects before giving the drug to humans." },
+      { q: "What is a double-blind trial?", options: ["The patient doesn't know if they have the real drug", "The doctor doesn't know, but the patient does", "Neither the patient nor the doctor knows who has the real drug or the placebo", "The trial is done on blind people"], ans: 2, rationale: "This removes psychological bias (the placebo effect) for both patient and doctor." },
+      { q: "TRIPLE: What are monoclonal antibodies?", options: ["Antibodies produced from many different clones of cells", "Antibodies produced from a single clone of cells, specific to one binding site on one antigen", "Antibodies that target viruses", "Antibodies found in plants"], ans: 1, rationale: "They are identical copies of one type of antibody, designed to target one specific antigen." },
+      { q: "TRIPLE: What is a hybridoma cell?", options: ["A fused cell of a mouse lymphocyte and a tumour cell", "A plant cell and animal cell fused", "A bacterial cell and a virus", "A red blood cell and white blood cell"], ans: 0, rationale: "Lymphocytes make the antibody, and the tumour cell divides rapidly, creating a factory (hybridoma)." },
+      { q: "TRIPLE: How do plants defend themselves mechanically against herbivores?", options: ["Producing antibacterial chemicals", "Having a tough waxy cuticle", "Having thorns and hairs to deter animals", "Dropping their leaves"], ans: 2, rationale: "Thorns and hairs physically deter animals from eating the plant." }
+    ];
+    let userMCQAnswers = {}; let activeMCQIndices = Array.from({ length: 40 }, (_, i) => i);
+    let currentActivePointer = 0; let isMCQTransitioning = false;
+
+    function renderMCQ40() {
+      const card = document.getElementById('tab3-single-card'); const summary = document.getElementById('tab3-summary');
+      if (currentActivePointer >= activeMCQIndices.length) { card.classList.add('hidden'); summary.classList.remove('hidden'); showMCQSummary(); return; }
+      
+      card.classList.remove('hidden'); summary.classList.add('hidden');
+      const qIndex = activeMCQIndices[currentActivePointer]; const qData = mcq40Data[qIndex];
+      const answered = userMCQAnswers[qIndex] !== undefined;
+
+      document.getElementById('tab3-current-q-num').textContent = currentActivePointer + 1;
+      document.getElementById('tab3-total-q-num').textContent = activeMCQIndices.length;
+      document.getElementById('tab3-progress-bar').style.width = `${((currentActivePointer + 1) / activeMCQIndices.length) * 100}%`;
+      
+      let scoreCount = 0; Object.keys(userMCQAnswers).forEach(k => { if (userMCQAnswers[k] === mcq40Data[k].ans) scoreCount++; });
+      document.getElementById('tab3-score').textContent = scoreCount;
+
+      let opts = '';
+      qData.options.forEach((opt, idx) => {
+        let style = "border-slate-200 bg-white hover:bg-slate-50";
+        if (answered) {
+          if (idx === qData.ans) style = "border-emerald-400 bg-emerald-50 font-bold";
+          else if (idx === userMCQAnswers[qIndex]) style = "border-rose-400 bg-rose-50 font-bold";
+          else style = "opacity-50";
+        }
+        opts += `<button onclick="handleMCQChoice(${idx})" ${answered?'disabled':''} class="w-full text-left p-3 rounded-xl border text-sm transition flex gap-3 ${style}"><span class="bg-slate-200 w-6 h-6 flex items-center justify-center rounded text-xs shrink-0">${String.fromCharCode(65+idx)}</span><span>${opt}</span></button>`;
+      });
+
+      card.innerHTML = `<div class="bg-slate-50 rounded-2xl p-4 border shadow-sm">
+        <h3 class="font-bold text-slate-900 mb-3">${qData.q}</h3>
+        <div class="space-y-2">${opts}</div>
+        ${answered ? `<div class="mt-3 p-2 rounded text-xs ${userMCQAnswers[qIndex]===qData.ans ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900'}">${userMCQAnswers[qIndex]===qData.ans?'✓':'✗'} ${qData.rationale}</div>` : ''}
+      </div>`;
+    }
+    function handleMCQChoice(idx) {
+      if (isMCQTransitioning) return;
+      const qIndex = activeMCQIndices[currentActivePointer];
+      userMCQAnswers[qIndex] = idx; isMCQTransitioning = true; renderMCQ40();
+      if(idx === mcq40Data[qIndex].ans) { currentStreak++; playSound('correct'); } else { currentStreak = 0; playSound('wrong'); }
+      updateStreakDisplay();
+      setTimeout(() => { currentActivePointer++; isMCQTransitioning = false; renderMCQ40(); }, 1200); 
+    }
+    function showMCQSummary() {
+      let score = 0; activeMCQIndices.forEach(idx => { if (userMCQAnswers[idx] === mcq40Data[idx].ans) score++; });
+      document.getElementById('tab3-final-score').textContent = score;
+      if (score === activeMCQIndices.length) { document.getElementById('btn-retest-missed').classList.add('hidden'); playSound('complete'); } 
+      else { document.getElementById('btn-retest-missed').classList.remove('hidden'); document.getElementById('retest-count').textContent = activeMCQIndices.length - score; }
+    }
+    function retestMissedQuestions() {
+      activeMCQIndices = activeMCQIndices.filter(idx => userMCQAnswers[idx] !== mcq40Data[idx].ans);
+      activeMCQIndices.forEach(idx => delete userMCQAnswers[idx]);
+      currentActivePointer = 0; renderMCQ40();
+    }
+    function resetMCQ40() { userMCQAnswers = {}; activeMCQIndices = Array.from({length:40},(_,i)=>i); currentActivePointer = 0; renderMCQ40(); }
+
+    // TAB 4: TOUCH DRAG
+    let dragSrcList = null, dragSrcIdx = -1, dragOverIdx = -1;
+    function initTouchDrag(el, type, idx) {
+      el.setAttribute('draggable', 'true');
+      el.addEventListener('dragstart', (e) => { dragSrcList = type; dragSrcIdx = idx; el.classList.add('dragging-card'); });
+      el.addEventListener('dragover', (e) => e.preventDefault());
+      el.addEventListener('drop', (e) => { e.preventDefault(); if (dragSrcList === type && dragSrcIdx !== idx) reorderArrayItems(type, dragSrcIdx, idx); });
+      el.addEventListener('dragend', () => el.classList.remove('dragging-card'));
+      el.addEventListener('touchstart', () => { dragSrcList = type; dragSrcIdx = idx; dragOverIdx = idx; el.classList.add('dragging-card'); }, {passive:false});
+      el.addEventListener('touchmove', (e) => {
+        if(dragSrcList !== type) return; e.preventDefault();
+        const under = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+        if(under) { const c = under.closest('[data-drag-index]'); if(c && c.dataset.listType === type) dragOverIdx = parseInt(c.dataset.dragIndex); }
+      }, {passive:false});
+      el.addEventListener('touchend', () => { el.classList.remove('dragging-card'); if(dragSrcList === type && dragOverIdx !== -1 && dragSrcIdx !== dragOverIdx) reorderArrayItems(type, dragSrcIdx, dragOverIdx); });
+    }
+    function reorderArrayItems(type, from, to) { if (type === 'vaccine') { const i = vaccineList.splice(from, 1)[0]; vaccineList.splice(to, 0, i); renderVaccine(); } }
+
+    const vaccineOrig = [
+      { order: 1, text: "A small quantity of dead or inactive pathogens are injected into the body." },
+      { order: 2, text: "White blood cells detect the foreign antigens on the pathogens." },
+      { order: 3, text: "White blood cells produce specific antibodies to bind to these antigens." },
+      { order: 4, text: "The pathogen is destroyed, and 'memory cells' remain in the blood." },
+      { order: 5, text: "If the live pathogen infects the body again, memory cells rapidly produce massive amounts of antibodies." },
+      { order: 6, text: "The live pathogen is destroyed before it can cause symptoms of the disease." }
+    ];
+    let vaccineList = [...vaccineOrig]; let tab4Score = 0;
+    function renderVaccine() {
+      const c = document.getElementById('vaccine-sentences-list'); c.innerHTML = '';
+      vaccineList.forEach((item, idx) => {
+        const row = document.createElement('div'); row.className = "p-3 rounded-lg border bg-white shadow-sm flex items-center justify-between touch-draggable"; row.dataset.dragIndex = idx; row.dataset.listType = 'vaccine';
+        row.innerHTML = `<div class="flex items-center gap-3"><span class="text-sky-700 bg-sky-50 p-2 rounded">☰</span><p class="text-sm">${item.text}</p></div>
+        <div class="flex flex-col"><button onclick="vaccineList.splice(${idx},1)[0];vaccineList.splice(${idx-1},0,item);renderVaccine()" ${idx===0?'disabled':''} class="p-1">▲</button><button onclick="vaccineList.splice(${idx},1)[0];vaccineList.splice(${idx+1},0,item);renderVaccine()" ${idx===5?'disabled':''} class="p-1">▼</button></div>`;
+        initTouchDrag(row, 'vaccine', idx); c.appendChild(row);
+      });
+    }
+    function checkVaccineSequence() {
+      tab4Score = vaccineList.filter((e, i) => e.order === i + 1).length;
+      document.getElementById('tab4-score').textContent = tab4Score;
+      const fb = document.getElementById('vaccine-feedback-banner'); fb.classList.remove('hidden');
+      if(tab4Score === 6) { playSound('complete'); fb.className="mt-1 p-2 bg-emerald-100 text-emerald-900 rounded"; fb.textContent="Perfect Sequence! (+6 Marks)"; }
+      else { playSound('wrong'); fb.className="mt-1 p-2 bg-amber-100 text-amber-900 rounded"; fb.textContent=`${tab4Score}/6 correct. Review how memory cells form.`; }
+    }
+    function resetVaccineSequence() { vaccineList.sort(()=>Math.random()-0.5); document.getElementById('vaccine-feedback-banner').classList.add('hidden'); renderVaccine(); }
+
+    // TAB 5: REQUIRED PRACTICALS (TRIPLE)
+    const tab5Data = [
+      { q: "What is the purpose of culturing microorganisms on agar?", options: ["To make them safe", "To grow them so they can be studied or to test the effect of antibiotics/disinfectants", "To extract DNA", "To produce vaccines"], ans: 1, exp: "Growing bacteria on agar plates allows you to see colonies and test chemicals on them." },
+      { q: "What must you do to the Petri dish and agar before use?", options: ["Wash with soap", "Sterilise them to kill unwanted microorganisms", "Freeze them", "Cover in acid"], ans: 1, exp: "Sterilisation prevents contamination from microbes already on the dish." },
+      { q: "How do you sterilise an inoculating loop?", options: ["Wash it in water", "Wipe it with a tissue", "Pass it through a hot Bunsen burner flame", "Dip it in acid"], ans: 2, exp: "The flame kills any bacteria present on the wire loop." },
+      { q: "Why should you work near a Bunsen burner flame?", options: ["To see better", "It creates convection currents that draw microbes in the air away from the plate", "To keep the agar warm", "To burn the bacteria"], ans: 1, exp: "Convection currents push contaminated air upwards, protecting your sterile agar." },
+      { q: "How should the lid of the Petri dish be secured?", options: ["Taped all the way around to make it airtight", "Left completely open", "Taped with a few pieces of adhesive tape, but not fully sealed", "Glued shut"], ans: 2, exp: "Sealing it completely stops oxygen getting in, which encourages harmful anaerobic bacteria to grow." },
+      { q: "Why must the Petri dish be stored upside down?", options: ["To confuse the bacteria", "To stop condensation dripping onto the agar surface", "To save space", "To force bacteria to swim"], ans: 1, exp: "Condensation on the lid could drip down and disrupt the bacterial colonies." },
+      { q: "In schools, what is the maximum temperature bacteria should be incubated at?", options: ["10°C", "25°C", "37°C", "50°C"], ans: 1, exp: "25°C reduces the risk of growing harmful pathogens that prefer human body temperature (37°C)." },
+      { q: "In the antibiotics practical, what is the independent variable?", options: ["The size of the clear zone", "The type or concentration of antibiotic on the paper disc", "The type of bacteria", "The temperature"], ans: 1, exp: "The independent variable is what you change (the different antibiotics)." },
+      { q: "What is the dependent variable (what you measure)?", options: ["The temperature", "The size/area of the clear zone (zone of inhibition) around the disc", "The volume of agar", "The type of bacteria"], ans: 1, exp: "You measure how much bacteria was killed by measuring the clear zone." },
+      { q: "Which of these is a control variable?", options: ["The type of antibiotic", "The diameter of the clear zone", "The temperature of incubation and time left to grow", "The number of colonies"], ans: 2, exp: "Temperature and time must be the same so it's a fair test of the antibiotics." },
+      { q: "What does a larger 'zone of inhibition' (clear zone) mean?", options: ["The bacteria are immune", "The antibiotic was less effective", "The antibiotic was more effective at killing the bacteria", "The antibiotic is out of date"], ans: 2, exp: "A larger clear area means more bacteria were killed by that specific antibiotic." },
+      { q: "What formula is used to calculate the area of the clear zone?", options: ["π × d", "Area = πr²", "Base × Height", "2πr"], ans: 1, exp: "The clear zone is a circle, so use Area = π × radius²." },
+      { q: "If the diameter of the clear zone is 16mm, what is the radius?", options: ["16mm", "32mm", "8mm", "4mm"], ans: 2, exp: "Radius is half the diameter (16 / 2 = 8mm)." },
+      { q: "Calculate the area of a clear zone with a radius of 10mm (use π = 3.14).", options: ["31.4 mm²", "100 mm²", "314 mm²", "62.8 mm²"], ans: 2, exp: "Area = 3.14 × 10² = 3.14 × 100 = 314 mm²." },
+      { q: "Why might a paper disc have NO clear zone around it?", options: ["The bacteria are resistant to that antibiotic", "The bacteria died", "The agar is faulty", "The dish was upside down"], ans: 0, exp: "If the bacteria grow right up to the disc, the antibiotic had no effect (bacteria are resistant)." },
+      { q: "Why do we include a paper disc soaked only in sterile water (a control)?", options: ["To water the bacteria", "To prove that any death of bacteria is due to the antibiotic, not the paper disc itself", "To clean the agar", "To lower the temperature"], ans: 1, exp: "The control shows that the paper itself doesn't kill bacteria." },
+      { q: "What does 'aseptic technique' mean?", options: ["Working really quickly", "Methods to prevent contamination by unwanted microorganisms", "Working in a cold room", "Washing hands only"], ans: 1, exp: "Aseptic means without contamination." },
+      { q: "How do bacteria multiply?", options: ["Meiosis", "Binary Fission", "Mitosis", "Budding"], ans: 1, rationale: "Bacteria are prokaryotes; they divide by simple binary fission." },
+      { q: "If a bacterium divides every 20 mins, how many divisions occur in 2 hours?", options: ["2", "4", "6", "10"], ans: 2, exp: "2 hours = 120 mins. 120 / 20 = 6 divisions." },
+      { q: "If you start with 1 bacterium, how many are there after 6 divisions?", options: ["6", "12", "32", "64"], ans: 3, exp: "1 × 2⁶ = 64 bacteria." }
+    ];
+    let tab5Answers = {};
+    
+    function renderPracticals() {
+        const c = document.getElementById('tab5-practicals-container'); c.innerHTML = '';
+        tab5Data.forEach((item, idx) => {
+            const answered = tab5Answers[idx] !== undefined;
+            let optsHtml = '';
+            item.options.forEach((opt, oIdx) => {
+                let style = "bg-white border-slate-200 hover:bg-purple-50";
+                if(answered) {
+                    if(oIdx === item.ans) style = "bg-emerald-100 border-emerald-400 font-bold";
+                    else if(oIdx === tab5Answers[idx]) style = "bg-rose-100 border-rose-400 font-bold";
+                    else style = "opacity-50";
+                }
+                optsHtml += `<button onclick="handleTab5Ans(${idx}, ${oIdx})" ${answered?'disabled':''} class="p-2 border rounded text-xs text-left ${style}">${opt}</button>`;
+            });
+            c.innerHTML += `
+                <div class="p-3 border rounded-lg bg-white shadow-sm border-l-2 border-l-purple-400">
+                    <p class="text-sm font-bold text-slate-800 mb-2">${idx+1}. ${item.q}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">${optsHtml}</div>
+                    ${answered ? `<p class="mt-2 text-xs p-1.5 rounded ${tab5Answers[idx] === item.ans ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}"><strong>${tab5Answers[idx] === item.ans ? '✓' : '✗'}</strong> ${item.exp}</p>` : ''}
+                </div>`;
+        });
+        let s = 0; Object.keys(tab5Answers).forEach(k => { if(tab5Answers[k] === tab5Data[k].ans) s++; });
+        document.getElementById('tab5-score').textContent = s;
+    }
+    function handleTab5Ans(qIdx, oIdx) { tab5Answers[qIdx] = oIdx; if(oIdx === tab5Data[qIdx].ans) playSound('correct'); else playSound('wrong'); renderPracticals(); }
+    function resetPracticals() { tab5Answers = {}; renderPracticals(); }
+
+    // TAB 6: 6-MARKERS
+    const tab6Questions = {
+      1: {
+        category: "AQA 4.3.1 • Human Defence Systems",
+        prompt: "Describe the non-specific defence systems of the human body against pathogens. [6 marks]",
+        terms: [ { word: "skin", regex: /skin/i }, { word: "physical barrier", regex: /barrier/i }, { word: "sebum / antimicrobial", regex: /sebum|antimicrobial|sweat/i }, { word: "nose / hairs / mucus", regex: /nose|hair|mucus/i }, { word: "trachea / bronchi / cilia", regex: /trachea|bronchi|cilia/i }, { word: "waft", regex: /waft|sweep/i }, { word: "stomach", regex: /stomach/i }, { word: "hydrochloric acid", regex: /acid/i } ],
+        highModel: "The skin acts as a physical barrier against pathogens and secretes antimicrobial oils (sebum) to kill them. The nose contains hairs and mucus which trap particles and pathogens from the air. The trachea and bronchi also produce mucus to trap pathogens. The lining of the trachea and bronchi is covered in tiny hairs called cilia, which waft the mucus up to the back of the throat where it is swallowed. In the stomach, hydrochloric acid is produced which destroys the vast majority of ingested pathogens.",
+        medModel: "The skin is a barrier that stops pathogens getting in. The nose has hairs and mucus to trap pathogens you breathe in. The trachea has mucus and cilia. The cilia waft the mucus up to the throat to be swallowed. The stomach has strong acid that kills the bacteria."
+      },
+      2: {
+        category: "AQA 4.3.1.6 • White Blood Cells",
+        prompt: "Explain how white blood cells help to defend the body against pathogens. [6 marks]",
+        terms: [ { word: "phagocytosis", regex: /phagocytosis/i }, { word: "engulf / digest", regex: /engulf|digest/i }, { word: "antibodies", regex: /antibod(y|ies)/i }, { word: "specific antigens", regex: /specific|antigen/i }, { word: "destroy pathogens", regex: /destroy/i }, { word: "antitoxins", regex: /antitoxin/i }, { word: "neutralise", regex: /neutralise/i }, { word: "toxins", regex: /toxin/i } ],
+        highModel: "White blood cells defend the body in three main ways. Firstly, some white blood cells carry out phagocytosis, where they track, engulf and digest pathogens using enzymes. Secondly, lymphocytes produce antibodies. These are specific proteins that bind to specific antigens on the surface of the pathogen, causing them to clump together and be destroyed. Finally, white blood cells produce antitoxins, which bind to and neutralise the harmful toxins produced by bacteria.",
+        medModel: "White blood cells engulf pathogens and digest them in a process called phagocytosis. They also produce antibodies which attach to antigens on the pathogen to destroy it. Lastly they produce antitoxins which cancel out the toxins made by bacteria."
+      },
+      3: {
+        category: "AQA 4.3.1.7 • Vaccination",
+        prompt: "Explain how a vaccination makes a person immune to a disease. [6 marks]",
+        terms: [ { word: "dead / inactive", regex: /dead|inactive/i }, { word: "pathogen injected", regex: /pathogen|inject/i }, { word: "white blood cells", regex: /white\s*blood\s*cell/i }, { word: "antibodies", regex: /antibod(y|ies)/i }, { word: "specific antigens", regex: /specific|antigen/i }, { word: "memory cells", regex: /memory/i }, { word: "rapidly", regex: /rapid(ly)?|fast(er)?/i }, { word: "large quantities", regex: /large|lot|mass/i } ],
+        highModel: "A vaccination involves injecting a small quantity of a dead or inactive form of the pathogen into the body. White blood cells recognise the foreign antigens on the pathogen and are stimulated to produce specific antibodies against them. After the pathogen is destroyed, some white blood cells remain in the blood as 'memory cells'. If the person is re-infected by the same live pathogen, the memory cells recognise the antigen and rapidly produce large quantities of antibodies. This destroys the pathogen before it can cause symptoms.",
+        medModel: "A vaccine has dead or inactive pathogens which are injected. Your white blood cells see the antigens and make antibodies to fight it. Some white blood cells become memory cells. If the real disease attacks you later, the memory cells make lots of antibodies very fast to kill it before you get sick."
+      },
+      4: {
+        category: "AQA 4.3.1.9 • Drug Trials",
+        prompt: "Describe the stages of testing a new drug before it is licensed for public use. [6 marks]",
+        terms: [ { word: "preclinical", regex: /pre(\s|-)?clinical/i }, { word: "cells / tissues / animals", regex: /cell|tissue|animal/i }, { word: "toxicity / efficacy", regex: /toxic|efficacy|safe|work/i }, { word: "clinical trials", regex: /clinical/i }, { word: "healthy volunteers", regex: /healthy|volunteer/i }, { word: "low doses", regex: /low\s*dose/i }, { word: "patients / optimum dose", regex: /patient|optimum/i }, { word: "double-blind / placebo", regex: /double(-|\s)blind|placebo/i } ],
+        highModel: "New drugs undergo preclinical testing in a lab using cells, tissues, and live animals to test for toxicity (safety) and efficacy (if it works). If safe, it moves to clinical trials. Phase 1 involves giving very low doses to healthy volunteers to check for side effects. Phase 2 involves giving the drug to patients with the disease to see if it treats it. Phase 3 finds the optimum dose. These are often double-blind trials, where some patients get the real drug and others get a placebo (fake drug). Neither the doctor nor the patient knows who has what, preventing psychological bias.",
+        medModel: "First the drug is tested in a lab on cells and animals to see if it is toxic. Then it moves to clinical trials on healthy volunteers using small doses to check for side effects. Then it is tested on sick patients to find the optimum dose. They use a double-blind trial with a placebo, meaning neither the doctor or patient knows who has the real drug."
+      },
+      5: {
+        category: "AQA 4.3.2.1 • Monoclonal Antibodies (TRIPLE)",
+        prompt: "Describe how monoclonal antibodies are produced. [6 marks]",
+        terms: [ { word: "mouse injected", regex: /mouse|inject/i }, { word: "antigen", regex: /antigen/i }, { word: "lymphocytes", regex: /lymphocyte/i }, { word: "tumour cell", regex: /tumour|cancer/i }, { word: "fuse", regex: /fuse|fusion/i }, { word: "hybridoma", regex: /hybridoma/i }, { word: "divide / clone", regex: /divide|clone|mitosis/i }, { word: "purified", regex: /purif/i } ],
+        highModel: "A mouse is injected with a specific antigen. This stimulates the mouse's lymphocytes (white blood cells) to produce specific antibodies against the antigen. These lymphocytes are extracted, but they cannot divide. They are fused with a tumour cell (which divides rapidly) to create a hybridoma cell. This single hybridoma cell divides by mitosis to form a clone of identical cells. All these cells produce the exact same specific antibody (monoclonal antibodies). A large amount of the antibody can then be collected and purified for use.",
+        medModel: "You inject a mouse with an antigen so its lymphocytes make antibodies. You take the lymphocyte and fuse it with a tumour cell because tumour cells divide quickly. This makes a hybridoma cell. The hybridoma clones itself many times. All the clones make the same monoclonal antibody which can be collected."
+      },
+      6: {
+        category: "AQA 4.3.3.2 • Plant Defence (TRIPLE)",
+        prompt: "Describe the physical, chemical, and mechanical defence responses of plants. [6 marks]",
+        terms: [ { word: "physical", regex: /physical/i }, { word: "cellulose / waxy cuticle / bark", regex: /cellulose|waxy|bark/i }, { word: "chemical", regex: /chemical/i }, { word: "antibacterial / poisons", regex: /antibacterial|poison/i }, { word: "mechanical", regex: /mechanical/i }, { word: "thorns / hairs", regex: /thorn|hair/i }, { word: "drooping / curling", regex: /droop|curl|fold/i }, { word: "mimicry", regex: /mimic/i } ],
+        highModel: "Plants have physical defences against invasion, such as cellulose cell walls, a tough waxy cuticle on leaves, and layers of dead cells around stems (bark) which fall off. They have chemical defences, including producing antibacterial chemicals to kill bacteria, and poisons to deter herbivores. Finally, they have mechanical adaptations, such as thorns and hairs to physically deter animals, leaves which droop or curl when touched to dislodge insects, and mimicry to trick animals into not eating them.",
+        medModel: "Plants use physical defences like a waxy cuticle on leaves and bark on trees to stop pathogens entering. They use chemical defences like making poisons or antibacterial chemicals to stop animals eating them or kill bacteria. They use mechanical defences like having thorns and hairs to stop animals eating them, or leaves that curl when touched."
+      }
+    };
+    
+    let currentTab6QId = 1; let tab6Answers = {1:'',2:'',3:'',4:'',5:'',6:''}; let tab6Scores = {1:0,2:0,3:0,4:0,5:0,6:0}; let tab6Evaluated = {1:false,2:false,3:false,4:false,5:false,6:false};
+
+    function loadTab6Question(qNum) {
+      tab6Answers[currentTab6QId] = document.getElementById('tab6-student-answer').value; currentTab6QId = qNum;
+      [1,2,3,4,5,6].forEach(n => document.getElementById(`tab6-qbtn-${n}`).className = n===qNum ? "px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white" : "px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700");
+      const q = tab6Questions[qNum];
+      document.getElementById('tab6-q-category').textContent = q.category;
+      document.getElementById('tab6-prompt-text').textContent = q.prompt;
+      document.getElementById('tab6-student-answer').value = tab6Answers[qNum];
+      
+      document.getElementById('tab6-total-terms-count').textContent = q.terms.length;
+      const chips = document.getElementById('tab6-keywords-chips'); chips.innerHTML='';
+      
+      // Shuffle terms as requested!
+      const shuffledTerms = [...q.terms].sort(() => Math.random() - 0.5);
+      shuffledTerms.forEach(t => { chips.innerHTML += `<span id="kw-${t.word.replace(/[^a-z]/gi,'')}" class="px-1 py-0.5 rounded text-[10px] font-mono bg-slate-200 text-slate-600 border">${t.word}</span>`; });
+
+      if (tab6Evaluated[qNum]) { document.getElementById('tab6-models-section').classList.remove('hidden'); document.getElementById('tab6-models-placeholder').classList.add('hidden'); document.getElementById('tab6-honesty-btn').classList.remove('hidden'); } 
+      else { document.getElementById('tab6-models-section').classList.add('hidden'); document.getElementById('tab6-models-placeholder').classList.remove('hidden'); document.getElementById('tab6-honesty-btn').classList.add('hidden'); }
+      
+      document.getElementById('tab6-current-mark-display').textContent = `Mark: ${tab6Scores[qNum]} / 6`; analyzeTab6Text();
+    }
+    
+    function analyzeTab6Text() {
+      const text = document.getElementById('tab6-student-answer').value; const q = tab6Questions[currentTab6QId];
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0; document.getElementById('tab6-word-count').textContent = words + " words";
+      let matched = 0;
+      q.terms.forEach(t => {
+        const c = document.getElementById(`kw-${t.word.replace(/[^a-z]/gi,'')}`);
+        if(t.regex.test(text)) { matched++; if(c) c.className="px-1 py-0.5 rounded text-[10px] font-mono bg-emerald-100 text-emerald-800 font-bold border-emerald-300"; }
+        else if(c) c.className="px-1 py-0.5 rounded text-[10px] font-mono bg-slate-200 text-slate-600 border";
+      });
+      document.getElementById('tab6-matched-terms-count').textContent = matched;
+      const p = document.getElementById('tab6-predicted-level');
+      if(matched>=6 && words>40) p.innerHTML="<span class='text-emerald-600'>Level 3 (5-6)</span>";
+      else if(matched>=3) p.innerHTML="<span class='text-sky-600'>Level 2 (3-4)</span>";
+      else if(words>10) p.innerHTML="<span class='text-amber-600'>Level 1 (1-2)</span>";
+      else p.textContent="Start typing...";
+    }
+    
+    function evaluateAndShowModels() {
+      const text = document.getElementById('tab6-student-answer').value; const q = tab6Questions[currentTab6QId];
+      let matched = 0; q.terms.forEach(t => { if(t.regex.test(text)) matched++; });
+      let score = 0; if(matched>=6) score=6; else if(matched>=4) score=4; else if(matched>=2) score=2; else if(text.length>20) score=1;
+      
+      tab6Scores[currentTab6QId] = score; tab6Evaluated[currentTab6QId] = true;
+      document.getElementById('tab6-current-mark-display').textContent = `Mark: ${score} / 6`; document.getElementById(`tab6-badge-${currentTab6QId}`).textContent = `(${score}/6)`;
+      document.getElementById('model-high-text').textContent = q.highModel; document.getElementById('model-high-commentary').textContent = "Excellent use of required scientific terminology. Full marks awarded.";
+      document.getElementById('model-med-text').textContent = q.medModel;
+      document.getElementById('tab6-models-section').classList.remove('hidden'); document.getElementById('tab6-models-placeholder').classList.add('hidden'); document.getElementById('tab6-honesty-btn').classList.remove('hidden');
+      showToast(`Q${currentTab6QId} Evaluated: ${score}/6 marks`, "bg-indigo-600");
+    }
+    
+    function applyHonestyBonus() { if(tab6Scores[currentTab6QId] < 6) { tab6Scores[currentTab6QId]++; document.getElementById('tab6-current-mark-display').textContent = `Mark: ${tab6Scores[currentTab6QId]} / 6`; document.getElementById(`tab6-badge-${currentTab6QId}`).textContent = `(${tab6Scores[currentTab6QId]}/6)`; } }
+    function clearTab6Answer() { if (isDictating) toggleDictation(); document.getElementById('tab6-student-answer').value=''; tab6Evaluated[currentTab6QId]=false; tab6Scores[currentTab6QId]=0; loadTab6Question(currentTab6QId); }
+
+    // DICTATION WEB SPEECH API
+    let recognition; let isDictating = false;
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition(); recognition.continuous = true; recognition.interimResults = false; recognition.lang = 'en-GB';
+      recognition.onresult = (event) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript; }
+        const textarea = document.getElementById('tab6-student-answer');
+        if (finalTranscript) { const currentVal = textarea.value; textarea.value = currentVal + (currentVal.endsWith(' ') || currentVal === '' ? '' : ' ') + finalTranscript; analyzeTab6Text(); }
+      };
+      recognition.onend = () => { if (isDictating) { recognition.start(); } else { const btn = document.getElementById('tab6-dictate-btn'); if(btn) { btn.innerHTML = '🎤 Dictate'; btn.classList.remove('animate-pulse'); } } };
+      recognition.onerror = (event) => { console.error('Speech recognition error', event.error); isDictating = false; const btn = document.getElementById('tab6-dictate-btn'); if(btn) { btn.innerHTML = '🎤 Dictate'; btn.classList.remove('animate-pulse'); } };
+    }
+    function toggleDictation() {
+      if (!recognition) { showToast("Speech dictation not supported in this browser.", "bg-rose-600"); return; }
+      const btn = document.getElementById('tab6-dictate-btn');
+      if (isDictating) { isDictating = false; recognition.stop(); btn.innerHTML = '🎤 Dictate'; btn.classList.remove('animate-pulse'); } 
+      else { isDictating = true; recognition.start(); btn.innerHTML = '🛑 Stop Dictating'; btn.classList.add('animate-pulse'); }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTab1();
+      tab2Matches.sort(()=>Math.random()-0.5); tab2Diseases.sort(()=>Math.random()-0.5); renderTab2();
+      renderMCQ40();
+      resetVaccineSequence();
+      resetPracticals();
+      loadTab6Question(1);
+    });
+  </script>
+</body>
+</html>
